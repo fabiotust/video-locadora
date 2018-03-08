@@ -1,0 +1,24 @@
+{
+  "name": "video-locadora",
+  "version": "1.0.0",
+  "description": "\"Video locadora para exercicio 4all\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fabiotust/video-locadora.git"
+  },
+  "author": "Fabio Tust",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fabiotust/video-locadora/issues"
+  },
+  "homepage": "https://github.com/fabiotust/video-locadora#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "mysql": "^2.15.0"
+  }
+}
