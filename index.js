@@ -18,6 +18,16 @@ router.get('/clients', (req, res) =>{
     execSQLQuery('SELECT * FROM clients', res);
 })
 
+//rota para mostrar um cliente pelo id
+router.get('/clientes/:id?', (req, res) =>{
+    let client_id = '';
+    if(req.params.id) {
+        client_id = parseInt(req.params.id);
+        execSQLQuery('SELECT * FROM clients WHERE id = ?', client_id, res);
+    }
+    
+})
+
 //rota para lista filmes
 router.get('/movies', (req, res) =>{
     execSQLQuery('SELECT * FROM movies', res);
