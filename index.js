@@ -1,9 +1,8 @@
-
 // DONE: O sistema deve permitir a criação de usuários (clientes), 
 // DONE: INSERT
 // DONE: UPDATE
 // DONE: DELETE
-// TODO: logon e logoff de um usuário, 
+// DONE: logon e logoff de um usuário, 
 // DONE: listagem de filmes disponíveis, 
 // DONE: locação de um filme, 
 // DONE: devolução de um filme, 
@@ -120,16 +119,27 @@ router.delete('/client/:id?', ensureToken, (req, res) =>{
             if(req.params.id) {
                 client_id = parseInt(req.params.id);
             
-                // TODO: verificar se o cliente tem filmes nao devolvidos 
-        
-                sql = 'DELETE FROM clients WHERE id = ?';
+                // verifica se o cliente tem filmes nao devolvidos 
+                sql = 'SELECT 0 FROM movies WHERE client_id = ?';
                 connection.query(sql, client_id, function(error, results, fields){
                     if(error){
                         res.sendStatus(404);
                     }else{
-                        res.sendStatus(200);
+                        if (results.length>0){
+                            res.sendStatus(412);
+                        }else{
+                            sql = 'DELETE FROM clients WHERE id = ?';
+                            connection.query(sql, client_id, function(error1, results1, fields1){
+                                if(error1){
+                                    res.sendStatus(404);
+                                }else{
+                                    res.sendStatus(200);
+                                }
+                                //connection.end();
+                            });
+                        }
                     }
-                    connection.end();
+                    //connection.end();
                 });
             }
         }
@@ -188,11 +198,9 @@ router.get('/movie/:title?', ensureToken, (req, res) =>{
                 console.log(sql);
                 connection.query(sql, title, function(error, results, fields){
                     if(error){
-                        //res.json(error);
                         res.sendStatus(404);
                     }else{
                         res.json(results);  
-                        //res.sendStatus(200);
                     }
                     connection.end();
                 });
@@ -210,23 +218,36 @@ router.post('/rent_movie/:id?', ensureToken, (req, response) =>{
         } else {
             const client_id = req.body.client_id;
             
-            // TODO: testar se o filme já está com algum cliente
-            
-            if(req.params.id) {
-                const id = parseInt(req.params.id);
-                var client = [{ client_id: client_id}, id];
-                var sql = 'UPDATE movies SET ? WHERE id = ?';
+            // testa se o filme já está com algum cliente
+            if(req.params.id) {     
+                const id = parseInt(req.params.id);       
+                var sql = 'SELECT 0 FROM movies WHERE id = ? AND client_id IS NULL';
+
+                connection.query(sql, id, (err, res) => {
+                    if(err){ 
+                        response.sendStatus(404);
+                    }else{
+                        if(res.length>0){
+                            var client = [{ client_id: client_id}, id];
+                            var sql = 'UPDATE movies SET ? WHERE id = ?';
+                          
+                            connection.query(sql, client, (err, res) => {
+                                if(err){
+                                    response.sendStatus(404);
+                                }else{
+                                    response.sendStatus(200); 
+                                }
+                                
+                                //connection.end();
+
+                            });  
+                        }else{
+                            response.sendStatus(412);
+                        }
+                    }
+                });       
+                //connection.end();
             }
-            connection.query(sql, client, (err, res) => {
-                if(err){ 
-                    //response.json(err);
-                    response.sendStatus(404);
-                }else{
-                    //response.json(res);
-                    response.sendStatus(200); 
-                }
-                connection.end();
-            });
         }
     });
 })
@@ -251,7 +272,7 @@ router.post('/return_movie/:id?', ensureToken, (req, response) =>{
                     //response.json(res);  
                     response.sendStatus(200);              
                 }
-                connection.end();
+                //connection.end()
             });
         }
     });
@@ -284,7 +305,7 @@ router.post('/login', function(req, response) {
                 });
             }
         }
-        connection.end();
+        //connection.end()
     });
 });
   
