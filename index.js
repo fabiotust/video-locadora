@@ -201,67 +201,6 @@ router.get('/movie/:title?', ensureToken, (req, res) =>{
         }
     });
 })
-  
-//rota para criar/editar um filme 
-router.post('/movie/:id?', ensureToken, (req, response) =>{
-    jwt.verify(req.token, 'secret', function(err, data) {
-        if (err) {
-            response.sendStatus(403);
-        } else {
-            const title     = req.body.title;
-            const director  = req.body.director;
-            if(req.params.id) {
-                const id = parseInt(req.params.id);
-
-                var client = [{ title: title, director: director}, id];
-                var sql = 'UPDATE movies SET ? WHERE id = ?';
-            }else{
-                var client = { title: title, director: director};
-                var sql = 'INSERT INTO movies SET ?';
-            }
-            connection.query(sql, client, (err, res) => {
-                if(err){ 
-                    //response.json(err);
-                    response.sendStatus(404);
-                }else{
-                    //response.json(res);
-                    response.sendStatus(200);
-                }
-                connection.end();
-            });
-        }
-    });
-})
-
-//rota para excluir um filme pelo id
-router.delete('/movie/:id?', ensureToken, (req, res) =>{
-    jwt.verify(req.token, 'secret', function(err, data) {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            let movie_id = '';
-            if(req.params.id) {
-                movie_id = parseInt(req.params.id);
-            
-                // TODO: verificar se o cliente tem filmes nao devolvidos 
-        
-                sql = 'DELETE FROM movies WHERE id = ?';
-                connection.query(sql, movie_id, function(error, results, fields){
-                    // TODO: testar se deletou algo e retornar adequadamente
-                    
-                    if(error) {
-                        //res.json(error);
-                        res.sendStatus(404);
-                    }else{
-                        //res.json(results);
-                        res.sendStatus(200); 
-                    }        
-                    connection.end();
-                });
-            }
-        }
-    });
-})
 
 //rota para alugar um filme 
 router.post('/rent_movie/:id?', ensureToken, (req, response) =>{
