@@ -38,104 +38,124 @@ router.get('/', (req, res) => res.json({ message: 'Funcionando!' }));
 app.use('/', router);
 
 //rota para lista clientes
-router.get('/clients', (req, res) =>{
-    //execSQLQuery('SELECT * FROM clients', res);
-    sql = 'SELECT * FROM clients';
-    connection.query(sql, function(error, results, fields){
-        if(error) 
-          res.json(error);
-        else
-          res.json(results);
-        connection.end();
-        console.log('executou!');
-    });
+router.get('/clients', ensureToken, (req, res) =>{
+    jwt.verify(req.token, 'secret', function(err, data) {
+        if (err) {
+            res.sendStatus(403);
+        } else { 
+            sql = 'SELECT * FROM clients';
+            connection.query(sql, function(error, results, fields){
+                if(error){
+                    res.sendStatus(404);
+                }else{
+                    res.json(results);
+                }
+                connection.end();
+            });
+        }
+    });        
 })
 
 //rota para mostrar um cliente pelo id
-router.get('/client/:id?', (req, res) =>{
-    let client_id = '';
-    if(req.params.id) {
-        client_id = parseInt(req.params.id);
-        //execSQLQuery('SELECT * FROM clients WHERE id = ?', client_id, res);
-        sql = 'SELECT * FROM clients WHERE id = ?';
-        connection.query(sql, client_id, function(error, results, fields){
-            if(error) 
-              res.json(error);
-            else
-              res.json(results);
-            connection.end();
-            console.log('executou!');
-        });
-
-    }
+router.get('/client/:id?', ensureToken, (req, res) =>{
+    jwt.verify(req.token, 'secret', function(err, data) {
+        if (err) {
+            res.sendStatus(403);
+        } else { 
+            let client_id = '';
+            if(req.params.id) {
+                client_id = parseInt(req.params.id);
+                sql = 'SELECT * FROM clients WHERE id = ?';
+                connection.query(sql, client_id, function(error, results, fields){
+                    if(error) {
+                        res.sendStatus(404);
+                    }else{
+                        res.json(results);
+                    }
+                    connection.end();
+                });
+            }
+        }
+    });
 })
 
 //rota para criar/editar cliente 
-router.post('/client/:id?', (req, response) =>{
+router.post('/client/:id?', ensureToken, (req, response) =>{
+    jwt.verify(req.token, 'secret', function(err, data) {
+        if (err) {
+            response.sendStatus(403);
+        } else { 
 
-    const email     = req.body.email;
-    const name      = req.body.name;
-    const password  = req.body.password;
-    console.log('------');
-    console.log(email);
-    console.log(name);
-    console.log(password);
-    console.log('------');
-    if(req.params.id) {
-        const id = parseInt(req.params.id);
-        console.log(id);
-        var client = [{ email: email, name: name, password: password}, id];
-        var sql = 'UPDATE clients SET ? WHERE id = ?';
-    }else{
-        var client = { email: email, name: name, password: password};
-        var sql = 'INSERT INTO clients SET ?';
-    }
-    connection.query(sql, client, (err, res) => {
-    if(err){ 
-        response.json(err);
-    }else{
-        response.json(res);
-        console.log('Last insert ID:', res.insertId);
-    }
-    
+            const email     = req.body.email;
+            const name      = req.body.name;
+            const password  = req.body.password;
+
+            if(req.params.id) {
+                const id = parseInt(req.params.id);
+                var client = [{ email: email, name: name, password: password}, id];
+                var sql = 'UPDATE clients SET ? WHERE id = ?';
+            }else{
+                var client = { email: email, name: name, password: password};
+                var sql = 'INSERT INTO clients SET ?';
+            }
+            connection.query(sql, client, (err, res) => {
+                if(err){ 
+                    response.sendStatus(404);
+                }else{
+                    response.sendStatus(200);
+                }
+                connection.end();
+            });
+        }
     });
 })
 
 //rota para excluir um cliente pelo id
-router.delete('/client/:id?', (req, res) =>{
-    let client_id = '';
-    if(req.params.id) {
-        client_id = parseInt(req.params.id);
-       
-        // TODO: verificar se o cliente tem filmes nao devolvidos 
- 
-        sql = 'DELETE FROM clients WHERE id = ?';
-        connection.query(sql, client_id, function(error, results, fields){
-            if(error) 
-              res.json(error);
-            else
-              res.json(results);
-            connection.end();
-        });
-
-    }
-})
-
-//rota para lista filmes
-router.get('/movies', (req, res) =>{
-    //execSQLQuery('SELECT * FROM movies', res);
-    sql = 'SELECT * FROM movies';
-    connection.query(sql, function(error, results, fields){
-        if(error) 
-          res.json(error);
-        else
-          res.json(results);
-        connection.end();
-        console.log('executou!');
+router.delete('/client/:id?', ensureToken, (req, res) =>{
+    jwt.verify(req.token, 'secret', function(err, data) {
+        if (err) {
+            res.sendStatus(403);
+        } else { 
+            let client_id = '';
+            if(req.params.id) {
+                client_id = parseInt(req.params.id);
+            
+                // TODO: verificar se o cliente tem filmes nao devolvidos 
+        
+                sql = 'DELETE FROM clients WHERE id = ?';
+                connection.query(sql, client_id, function(error, results, fields){
+                    if(error){
+                        res.sendStatus(404);
+                    }else{
+                        res.sendStatus(200);
+                    }
+                    connection.end();
+                });
+            }
+        }
     });
 })
 
-//rota para lista filmes
+//rota para lista todos os filmes
+router.get('/movies', ensureToken, (req, res) =>{
+    jwt.verify(req.token, 'secret', function(err, data) {
+        if (err) {
+            res.sendStatus(403);
+        } else { 
+            sql = 'SELECT * FROM movies';
+            connection.query(sql, function(error, results, fields){
+                if(error){ 
+                    res.sendStatus(404);
+                }else{
+                    res.json(results);
+                }
+                connection.end();
+            });
+        }
+    });
+})
+
+//rota para lista de filmes disponiveis
 router.get('/avaliable_movies', ensureToken, (req, res) =>{
     jwt.verify(req.token, 'secret', function(err, data) {
         if (err) {
@@ -207,7 +227,7 @@ router.post('/movie/:id?', ensureToken, (req, response) =>{
                     //response.json(res);
                     response.sendStatus(200);
                 }
-            
+                connection.end();
             });
         }
     });
@@ -266,6 +286,7 @@ router.post('/rent_movie/:id?', ensureToken, (req, response) =>{
                     //response.json(res);
                     response.sendStatus(200); 
                 }
+                connection.end();
             });
         }
     });
@@ -284,14 +305,14 @@ router.post('/return_movie/:id?', ensureToken, (req, response) =>{
                 var sql = 'UPDATE movies SET client_id = NULL WHERE id = ?';
             }
             connection.query(sql, client, (err, res) => {
-            if(err){ 
-                //response.json(err);
-                response.sendStatus(404);
-            }else{
-                //response.json(res);  
-                response.sendStatus(200);              
-            }
-            
+                if(err){ 
+                    //response.json(err);
+                    response.sendStatus(404);
+                }else{
+                    //response.json(res);  
+                    response.sendStatus(200);              
+                }
+                connection.end();
             });
         }
     });
@@ -310,51 +331,35 @@ router.post('/login', function(req, response) {
         response.sendStatus(403);
     }
     connection.query(sql, client, (err, res) => {
-    if(err){ 
-        response.sendStatus(403);
-        //response.json(err);
-    }else{
-        if (res.length<1) {
+        if(err){ 
             response.sendStatus(403);
+            //response.json(err);
         }else{
-            //response.sendStatus(200);
-            const token = jwt.sign({email: res.email}, 'secret');
-            response.json({
-                token: token
-            });
+            if (res.length<1) {
+                response.sendStatus(403);
+            }else{
+                //response.sendStatus(200);
+                const token = jwt.sign({email: res.email}, 'secret');
+                response.json({
+                    token: token
+                });
+            }
         }
-    }
+        connection.end();
     });
-    // const user = {id: 3};
-    // const token = jwt.sign({ user }, 'secret');
-    // res.json({
-    //     token: token
-    // });
 });
-
-app.get('/protected', ensureToken, function(req, res) {
-    jwt.verify(req.token, 'secret', function(err, data) {
-      if (err) {
-        res.sendStatus(403);
-      } else {
-        res.json({
-          description: 'Protected information. Congrats!'
-        });
-      }
-    });
-  });
   
-  function ensureToken(req, res, next) {
+function ensureToken(req, res, next) {
     const header = req.headers["authorization"];
     if (typeof header !== 'undefined') {
-      req.token = header;
-      next();
+        req.token = header;
+        next();
     } else {
-      res.sendStatus(403);
+        res.sendStatus(403);
     }
-  }
+}
 
 
 //inicia o servidor
 app.listen(port);
-console.log('API funcionando!');
+console.log('listen port: '+port);
